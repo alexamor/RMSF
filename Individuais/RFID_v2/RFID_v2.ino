@@ -3,6 +3,8 @@
 
 #define RST_PIN 9
 #define SS_PIN 10
+#define GREEN_LED 8
+#define REED_SWITCH 6
 
 byte readCard[4];
 char* myTags[100] = {};
@@ -11,6 +13,7 @@ String tagID = "";
 boolean successRead = false, correctTag = false;
 int proximitySensor; //Nao temos mas poderá dar jeito
 boolean doorOpened; //Para quando acrescentar ao ReedSwitch, por agora desprezar
+
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);
 
@@ -45,6 +48,10 @@ void printNormalModeMessage(){
 
 void setup() {
   // put your setup code here, to run once:
+  // pin initialization
+  pinMode(GREEN_LED, OUTPUT);
+  pinMode(REED_SWITCH, INPUT);
+  
   SPI.begin();
   mfrc522.PCD_Init();
   Serial.begin(9600);
@@ -65,8 +72,17 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
 
+  // check if door is closed
+  if(digitalRead(REED_SWITCH) == HIGH){
+    digitalWrite(GREEN_LED, LOW);
+    Serial.println("Your door is Closed");
+  }
+  else{
+    digitalWrite(GREEN_LED, HIGH);
+    Serial.println("Your door is Open");
+  }
+  
   //Put if after to verify if door is closed (ReedSwitch)
   {
     if ( ! mfrc522.PICC_IsNewCardPresent()) { //If a new PICC placed to RFID reader continue
