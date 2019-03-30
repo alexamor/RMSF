@@ -8,7 +8,7 @@ byte readCard[4];
 char* myTags[100] = {};
 int tagsCount = 0;
 String tagID = "";
-boolean sucessRead = false, correctTag = false;
+boolean successRead = false, correctTag = false;
 int proximitySensor; //Nao temos mas poderá dar jeito
 boolean doorOpened; //Para quando acrescentar ao ReedSwitch, por agora desprezar
 
@@ -68,29 +68,65 @@ void loop() {
   // put your main code here, to run repeatedly:
 
   //Put if after to verify if door is closed (ReedSwitch)
-  if ( ! mfrc522.PICC_IsNewCardPresent()) { //If a new PICC placed to RFID reader continue
-    return;
+  {
+    if ( ! mfrc522.PICC_IsNewCardPresent()) { //If a new PICC placed to RFID reader continue
+      return;
+    }
+    
+    if ( ! mfrc522.PICC_ReadCardSerial()) {   //Since a PICC placed get Serial and continue
+      return;
+    }
+    
+    tagID = "";
+    
+    // The MIFARE PICCs that we use have 4 byte UID
+    for ( uint8_t i = 0; i < 4; i++) {  //
+      readCard[i] = mfrc522.uid.uidByte[i];
+      tagID.concat(String(mfrc522.uid.uidByte[i], HEX)); // Adds the 4 bytes in a single String variable
+    }
+    
+    tagID.toUpperCase();
+    mfrc522.PICC_HaltA(); // Stop reading
+    
+    correctTag = false;
+  
+    if(tagID == myTags[0]){
+      Serial.println("MasterMode: Add or remove tag");
+      while(!successRead){
+        successRead = getID();
+        if(successRead){
+          for(int i = 0; i < 100; i++){
+            if(tagID == myTags[i]){
+              myTags[i] = "";
+              Serial.println("Tag removed");
+              printNormalModeMessage();
+              return;
+            }
+          }
+  
+          myTags[tagsCount] = strdup(tagID.c_str());
+          Serial.println("Tag Added");
+          printNormalModeMessage();
+          tagsCount++;
+          return;
+        }
+      }
+    }
+    successRead = false;
+  
+    //check if authorized tag
+    //////Começar no 0 ou 1?
+    for(int i = 0; i < 100; i++){
+      if(tagID == myTags[i]){
+        Serial.println("Access Granted");
+        printNormalModeMessage();
+        correctTag = true;
+      }
+    }
+  
+    if(correctTag == false){
+      Serial.println("Access Denied");
+    }
   }
-  
-  if ( ! mfrc522.PICC_ReadCardSerial()) {   //Since a PICC placed get Serial and continue
-    return;
-  }
-  
-  tagID = "";
-  
-  // The MIFARE PICCs that we use have 4 byte UID
-  for ( uint8_t i = 0; i < 4; i++) {  //
-    readCard[i] = mfrc522.uid.uidByte[i];
-    tagID.concat(String(mfrc522.uid.uidByte[i], HEX)); // Adds the 4 bytes in a single String variable
-  }
-  
-  tagID.toUpperCase();
-  mfrc522.PICC_HaltA(); // Stop reading
-  
-  correctTag = false;
-
-  if(tagID == myTags[0]){
-    Serial.Println("MasterMode: Add or remove tag");  
-  }
-
+  //Door Open here
 }
