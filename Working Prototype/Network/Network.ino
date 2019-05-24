@@ -1,7 +1,6 @@
 #include <SPI.h>
 #include <MFRC522.h>
 #include <ESP8266WiFi.h>
-#include <ESP8266WiFi.h>
 
 #define RST_PIN 9
 #define SS_PIN 10
@@ -16,6 +15,13 @@ int tagsCount = 0;
 String tagID = "";
 boolean successRead = false, correctTag = false;
 int grantAccess = 0; //0 - cant enter, 1 - can enter, 2 - entering
+
+// WiFi Constants
+const char* ssid = "eduroam";
+const char* password = "ash192RUI";
+
+unsigned char identity[] = "ist425485@tecnico.ulisboa.pt";
+
 
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);
@@ -60,11 +66,30 @@ void setup() {
   digitalWrite(GREEN_LED, LOW);
   digitalWrite(YELLOW_LED, LOW);
   digitalWrite(RED_LED, LOW);
+
+   // Connect to Wifi
+  Serial.begin(115200);
+  Serial.println("Connecting to ");
+  Serial.println(ssid);
+
+  WiFi.mode(WIFI_STA);
+  wifi_station_set_username(identity, sizeof(identity));
+
+    WiFi.begin(ssid, password);
+  
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.print(".");
+  }
+
+  Serial.println("WiFi connected");  
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+  
+  
   
   SPI.begin();
   mfrc522.PCD_Init();
-  Serial.begin(9600);
-
   Serial.println("Scanning Master");
   
   while(!successRead){
