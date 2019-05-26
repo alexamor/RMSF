@@ -38,6 +38,7 @@ if( !empty($_POST['id']) && !empty($_POST['local'])){
         echo("<p>Error: ");
         echo($exception->getMessage());
         echo("</p>");
+        exit();
     }
 
     $result = $get_records->fetchAll();

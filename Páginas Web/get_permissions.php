@@ -34,6 +34,7 @@ if(!empty($_GET['id'])){
         echo("<p>Error: ");
         echo($exception->getMessage());
         echo("</p>");
+        exit();
     }
 
     $result = $get_permissions->fetchAll();
