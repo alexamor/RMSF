@@ -54,7 +54,7 @@ foreach($result as $row){
         exit();
     }
 
-    $name_result = $get_permissions->fetchAll();
+    $name_result = $get_user_name->fetchAll();
     $name = $name_result[0]['name'];
 
     $local = $row['local'];
